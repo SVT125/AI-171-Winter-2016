@@ -19,24 +19,49 @@ public:
 	int getN() const { return this->n; }
 	int getP() const { return this->p; }
 	int getQ() const { return this->q; }
+	int getRowSize() const { return this->matrix.size(); }
+	int getColumnSize() const { return this->matrix[0].size(); }
+
+	//Returns the first [row,col] cell of the corresponding block that holds the given [row,col] cell.
+	static pair<int,int> getBlock(const SudokuMatrix& matrix, int row, int col) { 
+		int p = matrix.getRowSize(), q = matrix.getColumnSize(),
+			blockRow = (row - (row % p)), blockCol = (col - (col % q));
+		return make_pair(blockRow, blockCol);
+	}
 };
 
 SudokuMatrix& parseInput(string fileName) {
 
 }
 
-SudokuMatrix& fillMatrix(SudokuMatrix& matrix) {
+SudokuMatrix& fillMatrix(SudokuMatrix& matrix, int m) {
 
 }
 
 bool checkValidCell(const SudokuMatrix& matrix, int row, int col) {
 	//check row
-	for (int i = 0; i < matrix.getP(); i++) {
-
+	int cell = matrix.getMatrixCell(row, col);
+	for (int i = 0; i < matrix.getRowSize(); i++) {
+		if (i != row && matrix.getMatrixCell(i, col) != cell)
+			return false;
 	}
+
 	//check rol
+	for (int j = 0; j < matrix.getColumnSize(); j++) {
+		if (j != col && matrix.getMatrixCell(row,j) != cell)
+			return false;
+	}
 
 	//check block
+	pair<int,int> block = SudokuMatrix::getBlock(matrix, row, col);
+	for (int i = 0; i < matrix.getP(); i++) {
+		for (int j = 0; j < matrix.getQ(); j++) {
+			int blockRow = block.first+i, blockCol = block.second+j;
+			if (blockRow != row && blockCol != col && matrix[blockRow][blockCol] != cell)
+				return false;
+		}
+	}
+	return true;
 }
 
 void outputMatrix(const SudokuMatrix& matrix) {
