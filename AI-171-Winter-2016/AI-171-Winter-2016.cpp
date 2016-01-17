@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -32,6 +34,24 @@ public:
 };
 
 SudokuMatrix parseInput(string fileName) {
+	ifstream inputFile(fileName);
+
+	int m, n , p,q;
+	string line;
+
+	getline(inputFile, line)
+
+	m = stoi(strtok(line, ‘ ‘));
+	n = stoi(strtok(null, ‘ ‘)
+	p = stoi(strtok(null, ‘ ‘)
+	q = stoi(strtok(null, ‘ ‘)
+
+	inputFile.close();
+
+	if ( n != p*q || m > n*n)
+		cout << “Matrix Invalid” << endl;
+	else
+		return SudokuMatrix(m,n,p,q);
 
 }
 
@@ -87,6 +107,17 @@ bool checkValidCell(const SudokuMatrix& matrix, int row, int col) {
 }
 
 void outputMatrix(const SudokuMatrix& matrix) {
+	ofstream outputFile(fileName);
+	
+	outputFile << matrix.getM() << ‘ ‘ << matrix.getN() << ‘ ‘<< matrix.getP() << ‘ ‘
+	 << matrix.getQ() << endl;
+
+	for (int i = 0; i < matrix.get(); i ++){
+		for (int j = 0; l < matrix.getQ; i++){
+		outputFile << 
+		}
+	}
+	
 
 }
 
