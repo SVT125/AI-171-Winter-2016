@@ -30,12 +30,11 @@ public:
 	}
 };
 
-SudokuMatrix& parseInput(string fileName) {
+SudokuMatrix parseInput(string fileName) {
 
 }
 
-SudokuMatrix& fillMatrix(SudokuMatrix& matrix, int m) {
-
+bool fillMatrix(SudokuMatrix& matrix, int m) {
 }
 
 bool checkValidCell(const SudokuMatrix& matrix, int row, int col) {
