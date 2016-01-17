@@ -76,7 +76,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="outputMatrix.txt" />
     <Text Include="ReadMe.txt" />
+    <Text Include="testMatrix.txt" />
+    <Text Include="testMatrix2.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

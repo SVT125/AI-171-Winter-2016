@@ -16,6 +16,15 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="testMatrix.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="outputMatrix.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="testMatrix2.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
