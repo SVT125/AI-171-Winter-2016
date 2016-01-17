@@ -110,7 +110,7 @@ bool fillMatrix(SudokuMatrix& matrix) {
 
 		//Initialize the vectors to their possible values; convert to letters if N > 9.
 		for (int j = 0; j < values.size(); j++)
-			values[j] = j > 10 ? (char)(55 + index++) : index++;
+			values[j] = index++;
 
 		//Shuffle the vectors for random picking.
 		shuffle(values.begin(), values.end(),generator);
@@ -140,7 +140,9 @@ void outputMatrix(const SudokuMatrix& matrix, string fileName) {
 
 	for (int i = 0; i < matrix.getN(); i ++){
 		for (int j = 0; j < matrix.getN(); j++){
-			outputFile << matrix.getMatrixCell(i, j) << " ";
+			int cell = matrix.getMatrixCell(i, j);
+			char convertedCell = cell > 9 ? (char)(55+cell): (char)(48+cell);
+			outputFile << convertedCell << " ";
 		}
 		outputFile << endl;
 	}
