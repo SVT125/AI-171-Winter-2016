@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include <vector>
 #include <string>
+#include <random>
 
 using namespace std;
 
@@ -34,7 +35,29 @@ SudokuMatrix parseInput(string fileName) {
 
 }
 
-bool fillMatrix(SudokuMatrix& matrix, int m) {
+//Returns true if we were successfully able to fill the matrix, false otherwise.
+bool fillMatrix(SudokuMatrix& matrix) {
+	default_random_engine generator(random_device{}());
+	uniform_int_distribution<int> d(0, matrix.getN());
+	for (int i = 0; i < matrix.getM(); i++) {
+		int row = d(generator), col = d(generator), index = 0;
+		vector<int> values;
+		fill(values.begin(), values.end(), index++);
+		while (values.size() > 0) {
+			int chosenIndex = values[d(generator)];
+			matrix.setMatrixCell(row, col, values[chosenIndex]); 
+			values[chosenIndex] = 0;
+
+			//If the value is invalid, undo the change by zero-ing the cell. 
+			if (!checkValidCell(matrix, row, col))
+				matrix.setMatrixCell(row, col, 0);
+			else
+				break;
+		}
+		if (values.size() == 0)
+			return false;
+	}
+	return true;
 }
 
 bool checkValidCell(const SudokuMatrix& matrix, int row, int col) {
