@@ -82,15 +82,21 @@
     <Text Include="testMatrix2.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AI-171-Winter-2016.h" />
+    <ClInclude Include="BTSolver.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SudokuMatrix.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Variable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AI-171-Winter-2016.cpp" />
+    <ClCompile Include="BTSolver.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SudokuMatrix.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
