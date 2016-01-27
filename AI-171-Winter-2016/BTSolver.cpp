@@ -9,8 +9,11 @@ BTSolver::BTSolver(SudokuMatrix* matrix) {
 	//Fill the variables vector according to the empty slots of the matrix.
 	for (int i = 0; i < matrix->getN(); i++)
 		for (int j = 0; j < matrix->getN(); j++)
-			if (matrix->getMatrixCell(i, j) == 0)
-				variables.push_back(Variable(i, j));
+			if (matrix->getMatrixCell(i, j) == 0) {
+				Variable var(i, j);
+				var.setValue(0);
+				variables.push_back(var);
+			}
 }
 
 int BTSolver::getUnassignedVariableIndex() {
@@ -20,6 +23,14 @@ int BTSolver::getUnassignedVariableIndex() {
 	return -1;
 }
 
+int BTSolver::getBacktracks() {
+	return this->backtracks;
+}
+
+int BTSolver::getNodes() {
+	return this->nodes;
+}
+
 int BTSolver::getNextValue(std::vector<int>& values) {
 	if (values.size() == 0)
 		return -1;
@@ -27,6 +38,10 @@ int BTSolver::getNextValue(std::vector<int>& values) {
 	int value = values[0];
 	values.erase(values.begin());
 	return value;
+}
+
+vector<Variable> BTSolver::getVariables() {
+	return this->variables;
 }
 
 bool BTSolver::solve() {
@@ -53,11 +68,12 @@ bool BTSolver::solve() {
 			trail.push(nextVariableIndex);
 
 			//If we were able to find further solutions from this assignment, return success.
-			if (!solve())
+			if (solve())
 				return true;
 
 			//Backtrack, this value didn't lead to any further possible assignments.
 			variables[trail.top()].setValue(0);
+			matrix->setMatrixCell(var.getRow(), var.getCol(), 0);
 			trail.pop();
 			backtracks++;
 		}

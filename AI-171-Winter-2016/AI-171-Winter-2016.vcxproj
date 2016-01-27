@@ -76,6 +76,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="genmatrix.txt" />
+    <Text Include="logmatrix.txt" />
     <Text Include="outputMatrix.txt" />
     <Text Include="ReadMe.txt" />
     <Text Include="testMatrix.txt" />

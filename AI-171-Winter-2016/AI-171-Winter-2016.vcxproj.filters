@@ -25,6 +25,8 @@
     <Text Include="testMatrix2.txt">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="genmatrix.txt" />
+    <Text Include="logmatrix.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

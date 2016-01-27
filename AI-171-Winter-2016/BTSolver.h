@@ -19,7 +19,13 @@ public:
 
 	int getUnassignedVariableIndex();
 
+	int getNodes();
+
+	int getBacktracks();
+
 	int getNextValue(std::vector<int>& values);
+
+	std::vector<Variable> getVariables();
 
 	bool solve();
 };
