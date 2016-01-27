@@ -77,6 +77,7 @@ bool BTSolver::solve() {
 			trail.pop();
 			backtracks++;
 		}
+		matrix->setMatrixCell(var.getRow(), var.getCol(), 0);
 	}
 
 	return false;

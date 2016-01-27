@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SudokuMatrix.h"
+#include <iostream>
 
 using namespace std;
 
@@ -64,4 +65,13 @@ bool SudokuMatrix::checkValidCell(const SudokuMatrix* matrix, int row, int col) 
 		}
 	}
 	return true;
+}
+
+void SudokuMatrix::printMatrix() const {
+	for (int i = 0; i < this->n; i++) {
+		for (int j = 0; j < this->n; j++) {
+			cout << this->getMatrixCell(i, j) << " ";
+		}
+		cout << endl;
+	}
 }

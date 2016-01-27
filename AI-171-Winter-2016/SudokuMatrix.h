@@ -22,6 +22,7 @@ public:
 	int getQ() const;
 	static std::pair<int, int> getBlock(const SudokuMatrix* matrix, int row, int col);
 	static bool checkValidCell(const SudokuMatrix* matrix, int row, int col);
+	void printMatrix() const;
 };
 
 #endif

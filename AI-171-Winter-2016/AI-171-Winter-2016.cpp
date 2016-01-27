@@ -117,7 +117,7 @@ SudokuMatrix* readInput(std::string fileName) {
 	n = stoi(line);
 	getline(inputFile, line, ' ');
 	p = stoi(line);
-	getline(inputFile, line, ' ');
+	getline(inputFile, line);
 	q = stoi(line);
 
 	SudokuMatrix* matrix = new SudokuMatrix(-1, n, p, q);
@@ -131,9 +131,8 @@ SudokuMatrix* readInput(std::string fileName) {
 			istream_iterator<string>(),
 			back_inserter(ret));
 
-		for (int j = 0; j < n; j++) {
-			matrix->setMatrixCell(i, j,stoi(ret[i]));
-		}
+		for (int j = 0; j < n; j++)
+			matrix->setMatrixCell(i, j,stoi(ret[j]));
 	}
 
 	return matrix;
@@ -145,8 +144,8 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 	outputFile << "TOTAL_START = " << start << endl;
 	outputFile << "PREPROCESSING_START = " << "Not applicable" << endl; //Redo for AC preprocessing later
 	outputFile << "PREPROCESSING_END = " << "Not applicable" << endl; //Redo for AC preprocessing later
-	outputFile << "SEARCH_START = " << s_start << endl;
-	outputFile << "SEARCH_DONE = " << s_end << endl;
+	outputFile << "SEARCH_START = " << ((double)(s_start))/CLOCKS_PER_SEC << endl;
+	outputFile << "SEARCH_DONE = " << ((double)(s_end))/CLOCKS_PER_SEC << endl;
 	outputFile << "STATUS = ";
 
 	switch (flag) {
@@ -160,8 +159,10 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 	if (vars.size() == 0)
 		outputFile << "NONE" << endl;
 	else 
-		for (int i = 0; i < vars.size(); i++)
-			outputFile << to_string(vars[i].getValue()) << " ";
+		for (int i = 0; i < vars.size(); i++) {
+		int val = vars[i].getValue();
+		outputFile << (val > 9 ? (char)(55 + val) : (char)(48 + val)) << " ";
+		}
 	
 	outputFile << endl;
 
@@ -210,11 +211,11 @@ int main(int argc, char* argv[])
 			BTSolver solver(matrix);
 			flag = solver.solve();
 			s_end = clock() - begin;
-			outputLog(matrix, outputFile, flag, begin, s_start, s_end,solver.getVariables(),solver.getNodes(),solver.getBacktracks());
+			outputLog(matrix, outputFile, flag, 0, s_start, s_end,solver.getVariables(),solver.getNodes(),solver.getBacktracks());
 		}
 		catch (exception& e) {
 			vector<Variable> vars;
-			outputLog(matrix, outputFile, -1, begin, s_start, clock() - begin,vars,0,0);
+			outputLog(matrix, outputFile, -1, 0, s_start, clock() - begin,vars,0,0);
 		}
 	}
 	else {
