@@ -11,11 +11,13 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <cstring>
+#include <iterator>
 
 using namespace std;
 
 bool isTimedOut(long curr, long limit) {
-	return curr - limit > 0;
+	return curr - limit >= 0;
 }
 
 SudokuMatrix* parseInput(string fileName) {
@@ -49,10 +51,12 @@ bool fillMatrix(SudokuMatrix* matrix, clock_t begin, int limit) {
 	//Initialize a vector of shuffled cell row/index points, to linearly take from when populating the matrix->
 	int cellsIndex = 0;
 	vector<pair<int, int>> cells;
+	default_random_engine generator(random_device{}());
+
 	for (int i = 0; i < matrix->getN(); i++)
 		for (int j = 0; j < matrix->getN(); j++)
 			cells.push_back(make_pair(i, j));
-	random_shuffle(cells.begin(), cells.end());
+	shuffle(cells.begin(), cells.end(),generator);
 
 	for (int i = 0; i < matrix->getM(); i++) {
 		//If timed out, return.
@@ -71,7 +75,7 @@ bool fillMatrix(SudokuMatrix* matrix, clock_t begin, int limit) {
 			values[j] = index++;
 
 		//Shuffle the vectors for random picking.
-		random_shuffle(values.begin(), values.end());
+		shuffle(values.begin(), values.end(),generator);
 
 		for (size_t l = 0; l < values.size(); l++) {
 			matrix->setMatrixCell(row, col, values[l]);
@@ -93,7 +97,7 @@ bool fillMatrix(SudokuMatrix* matrix, clock_t begin, int limit) {
 void outputMatrix(const SudokuMatrix* matrix, string fileName) {
 	ofstream outputFile(fileName);
 	
-	outputFile << matrix->getM() << " " << matrix->getN() << " " << matrix->getP() << " "
+	outputFile << matrix->getN() << " " << matrix->getP() << " "
 	 << matrix->getQ() << endl;
 
 	for (int i = 0; i < matrix->getN(); i ++){
@@ -132,7 +136,7 @@ SudokuMatrix* readInput(std::string fileName) {
 			back_inserter(ret));
 
 		for (int j = 0; j < n; j++)
-			matrix->setMatrixCell(i, j,stoi(ret[j]));
+			matrix->setMatrixCell(i, j,atoi(ret[j].c_str()));
 	}
 
 	return matrix;
@@ -176,50 +180,68 @@ int main(int argc, char* argv[])
 	int flag;
 	clock_t begin = clock();
 
-	if (argc < 5)
+
+	if (argc < 4)
 		return -1;
 
-	int limit = atoi(argv[3]) * CLOCKS_PER_SEC;
-	string inputFile = argv[1], outputFile = argv[2];
+	clock_t limit = atof(argv[3]) * CLOCKS_PER_SEC;
+	string inputFileName = argv[1], outputFileName = argv[2];
 		
-
-	matrix = strcmp(argv[4], "GEN") == 0 ? parseInput(inputFile) : readInput(inputFile);
+	if (argc > 4)
+		matrix = strcmp(argv[4], "GEN") == 0 ? parseInput(inputFileName) : readInput(inputFileName);
+	else
+		matrix = readInput(inputFileName);
 
 	if (matrix == nullptr) {
 		cout << "Failed to retrieve matrix." << endl;
 		return -1;
 	}
+	
+	if (argc > 4)
+		if (strcmp(argv[4], "GEN") == 0) {
+			while (!fillMatrix(matrix, begin, limit) && !isTimedOut(clock() - begin, limit)) {
+				matrix = parseInput(inputFileName);
+			}
 
-	if (strcmp(argv[4], "GEN") == 0) {
-		while (!fillMatrix(matrix, begin, limit) && !isTimedOut(clock() - begin, limit)) {
-			matrix = parseInput(inputFile);
+			if (isTimedOut(clock()-begin, limit)) {
+				ofstream outputFile(outputFileName);
+				outputFile << "Timeout." << endl;
+				outputFile.close();
+				return -1;
+			}
+			
+			outputMatrix(matrix, outputFileName);
 		}
-
-		if (isTimedOut(begin, clock())) {
-			ofstream outputFile(outputFile);
-			outputFile << "Timeout." << endl;
-			outputFile.close();
-			return -1;
+		else if (strcmp(argv[4], "BT") == 0) {
+			clock_t s_start, s_end;
+			try {
+				s_start = clock() - begin, s_end;
+				BTSolver solver(matrix);
+				flag = solver.solve(begin,limit);
+				s_end = clock() - begin;
+				outputLog(matrix, outputFileName, flag, 0, s_start, s_end,solver.getVariables(),solver.getNodes(),solver.getBacktracks());
+			}
+			catch (exception& e) {
+				vector<Variable> vars;
+				outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin,vars,0,0);
+			}
 		}
-
-		outputMatrix(matrix, outputFile);
-	}
-	else if (strcmp(argv[4], "BT") == 0) {
+		else {
+			//Fill in the rest of the arguments...
+		}
+	else {
 		clock_t s_start, s_end;
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = solver.solve();
+			flag = solver.solve(begin,limit);
 			s_end = clock() - begin;
-			outputLog(matrix, outputFile, flag, 0, s_start, s_end,solver.getVariables(),solver.getNodes(),solver.getBacktracks());
+			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariables(), solver.getNodes(), solver.getBacktracks());
 		}
 		catch (exception& e) {
 			vector<Variable> vars;
-			outputLog(matrix, outputFile, -1, 0, s_start, clock() - begin,vars,0,0);
+			outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin, vars, 0, 0);
 		}
-	}
-	else {
-		//Fill in the rest of the arguments...
 	}
 
 	delete matrix;

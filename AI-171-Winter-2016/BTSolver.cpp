@@ -1,10 +1,15 @@
 #include "stdafx.h"
 #include "BTSolver.h"
+#include <iostream>
 
 using namespace std;
 
 BTSolver::BTSolver(SudokuMatrix* matrix) {
 	this->matrix = matrix;
+    this->foundSolution = false;
+    this->timedOut = false;
+    this->nodes = 0;
+    this->backtracks = 0;
 
 	//Fill the variables vector according to the empty slots of the matrix.
 	for (int i = 0; i < matrix->getN(); i++)
@@ -44,11 +49,10 @@ vector<Variable> BTSolver::getVariables() {
 	return this->variables;
 }
 
-bool BTSolver::solve() {
+int BTSolver::solve(clock_t begin, clock_t limit) {
 	nodes++;
-
-	if (foundSolution)
-		return true;
+    if (foundSolution)
+		return 1;
 
 	int nextVariableIndex, value;
 	std::vector<int> values;
@@ -57,10 +61,13 @@ bool BTSolver::solve() {
 
 	if ((nextVariableIndex = getUnassignedVariableIndex()) == -1) {
 		foundSolution = true;
-		return true;
+		return 1;
 	}
 
 	while ((value = getNextValue(values)) != -1) {
+		if (isTimedOut(clock()-begin, limit))
+			return 0;
+
 		Variable var = variables[nextVariableIndex];
 		matrix->setMatrixCell(var.getRow(), var.getCol(), value);
 		if (SudokuMatrix::checkValidCell(matrix, var.getRow(), var.getCol())) {
@@ -68,8 +75,8 @@ bool BTSolver::solve() {
 			trail.push(nextVariableIndex);
 
 			//If we were able to find further solutions from this assignment, return success.
-			if (solve())
-				return true;
+			if (solve(begin,limit) == 1)
+				return 1;
 
 			//Backtrack, this value didn't lead to any further possible assignments.
 			variables[trail.top()].setValue(0);
@@ -80,5 +87,5 @@ bool BTSolver::solve() {
 		matrix->setMatrixCell(var.getRow(), var.getCol(), 0);
 	}
 
-	return false;
+	return -1;
 }

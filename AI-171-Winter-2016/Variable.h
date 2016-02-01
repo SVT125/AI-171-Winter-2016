@@ -5,19 +5,13 @@ class Variable {
 private:
 	int row, col, value;
 public:
-	Variable(int row, int col) {
-		this->row = row;
-		this->col = col;
-		value = 0;
-	}
+	Variable(int row, int col);
 
-	void setValue(int value) {
-		this->value = value;
-	}
+	void setValue(int value);
 
-	int getValue() { return this->value; }
-	int getRow() { return this->row; }
-	int getCol() { return this->col; }
+	int getValue();
+	int getRow();
+	int getCol();
 };
 
 #endif

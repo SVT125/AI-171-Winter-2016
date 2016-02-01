@@ -27,7 +27,7 @@ public:
 
 	std::vector<Variable> getVariables();
 
-	bool solve();
+	int solve(clock_t begin, clock_t limit);
 };
 
 #endif
