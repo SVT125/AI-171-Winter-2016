@@ -180,12 +180,19 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 	outputFile << "DEADENDS = " << bts << endl;
 }
 
+bool findFlag(int argc, char* argv[], std::string flag) {
+	for (int i = 0; i < argc; i++)
+		if (strcmp(argv[i], flag.c_str()) == 0)
+			return true;
+	return false;
+}
+
 int main(int argc, char* argv[])
 {
 	SudokuMatrix* matrix;
 	int flag;
 	clock_t begin = clock();
-
+	bool doGen = findFlag(argc, argv, "GEN"), doBT = findFlag(argc, argv, "BT"), doFC = findFlag(argc, argv, "FC");
 
 	if (argc < 4)
 		return -1;
@@ -194,7 +201,7 @@ int main(int argc, char* argv[])
 	string inputFileName = argv[1], outputFileName = argv[2];
 		
 	if (argc > 4)
-		matrix = strcmp(argv[4], "GEN") == 0 ? parseInput(inputFileName) : readInput(inputFileName);
+		matrix = doGen ? parseInput(inputFileName) : readInput(inputFileName);
 	else
 		matrix = readInput(inputFileName);
 
@@ -204,7 +211,7 @@ int main(int argc, char* argv[])
 	}
 	
 	if (argc > 4)
-		if (strcmp(argv[4], "GEN") == 0) {
+		if (doGen) {
 			while (!fillMatrix(matrix, begin, limit) && !isTimedOut(clock() - begin, limit)) {
 				matrix = parseInput(inputFileName);
 			}
@@ -218,14 +225,14 @@ int main(int argc, char* argv[])
 			
 			outputMatrix(matrix, outputFileName);
 		}
-		else if (strcmp(argv[4], "BT") == 0) {
+		else if (doBT) {
 			clock_t s_start, s_end;
 			try {
 				s_start = clock() - begin, s_end;
 				BTSolver solver(matrix);
-				flag = solver.solve(begin,limit);
+				flag = solver.solve(begin,limit,doFC);
 				s_end = clock() - begin;
-				outputLog(matrix, outputFileName, flag, 0, s_start, s_end,solver.getVariables(),solver.getNodes(),solver.getBacktracks());
+				outputLog(matrix, outputFileName, flag, 0, s_start, s_end,solver.getVariableVector(),solver.getNodes(),solver.getBacktracks());
 			}
 			catch (exception& e) {
 				vector<Variable> vars;
@@ -240,9 +247,9 @@ int main(int argc, char* argv[])
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = solver.solve(begin,limit);
+			flag = solver.solve(begin,limit,doFC);
 			s_end = clock() - begin;
-			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariables(), solver.getNodes(), solver.getBacktracks());
+			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), solver.getNodes(), solver.getBacktracks());
 		}
 		catch (exception& e) {
 			vector<Variable> vars;
