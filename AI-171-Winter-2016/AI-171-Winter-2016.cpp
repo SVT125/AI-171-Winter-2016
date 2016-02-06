@@ -162,11 +162,17 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 
 	if (vars.size() == 0)
 		outputFile << "NONE" << endl;
-	else 
+	else {
+		outputFile << "(";
 		for (int i = 0; i < vars.size(); i++) {
-		int val = vars[i].getValue();
-		outputFile << (val > 9 ? (char)(55 + val) : (char)(48 + val)) << " ";
+			int val = vars[i].getValue();
+			outputFile << (val > 9 ? (char)(55 + val) : (char)(48 + val));
+			if (i == vars.size() - 1)
+				outputFile << ")" << endl;
+			else
+				outputFile << ",";
 		}
+	}
 	
 	outputFile << endl;
 
