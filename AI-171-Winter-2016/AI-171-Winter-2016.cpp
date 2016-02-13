@@ -211,8 +211,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	if (argc > 4)
-		if (doGen) {
+	if (doGen) {
 		while (!fillMatrix(matrix, begin, limit) && !isTimedOut(clock() - begin, limit)) {
 			matrix = parseInput(inputFileName);
 		}
@@ -225,30 +224,13 @@ int main(int argc, char* argv[])
 		}
 
 		outputMatrix(matrix, outputFileName);
-		}
-		else if (doBT) {
-			clock_t s_start, s_end;
-			try {
-				s_start = clock() - begin, s_end;
-				BTSolver solver(matrix);
-				flag = solver.solve(begin, limit, doFC);
-				s_end = clock() - begin;
-				outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariables(), solver.getNodes(), solver.getBacktracks());
-			}
-			catch (exception& e) {
-				vector<Variable> vars;
-				outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin, vars, 0, 0);
-			}
-		}
-		else {
-			//Fill in the rest of the arguments...
-		}
-	else {
+	} else if (doBT) {
 		clock_t s_start, s_end;
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = solver.solve(begin, limit, doFC);
+			flag = argc < 4 ? solver.solve(begin, limit, false) : solver.solve(begin, limit, doFC);
+			matrix->printMatrix();
 			s_end = clock() - begin;
 			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariables(), solver.getNodes(), solver.getBacktracks());
 		}
@@ -256,6 +238,9 @@ int main(int argc, char* argv[])
 			vector<Variable> vars;
 			outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin, vars, 0, 0);
 		}
+	}
+	else {
+		//Fill in the rest of the arguments...
 	}
 
 	delete matrix;

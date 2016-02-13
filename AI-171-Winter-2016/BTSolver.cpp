@@ -50,7 +50,6 @@ vector<Variable> BTSolver::getVariables() {
 }
 
 int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
-	nodes++;
 	if (foundSolution)
 		return 1;
 
@@ -63,6 +62,9 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 
 	Variable var = variables[nextVariableIndex];
 	vector<int> values = var.getPossibleValues();
+
+	if (values.size() > 0)
+		nodes++;
 
 	while ((value = getNextValue(values)) != -1) {
 		if (isTimedOut(clock() - begin, limit))
@@ -120,22 +122,30 @@ void BTSolver::applyForwardChecking(int row, int col, int val) {
 
 void BTSolver::undoForwardChecking(int row, int col) {
 	//Check down the row.
-	for (int i = 0; i < matrix->getN(); i++)
-		for (int j = 0; j < variables.size(); j++)
+	for (int i = 0; i < matrix->getN(); i++) {
+		for (int j = 0; j < variables.size(); j++) {
 			if (variables[j].getRow() == i && variables[j].getCol() == col)
 				variables[j].undoChange(row, col);
+		}
+	}
 
 	//Check down the column.
-	for (int i = 0; i < matrix->getN(); i++)
-		for (int j = 0; j < variables.size(); j++)
+	for (int i = 0; i < matrix->getN(); i++) {
+		for (int j = 0; j < variables.size(); j++) {
 			if (variables[j].getRow() == row && variables[j].getCol() == i)
 				variables[j].undoChange(row, col);
+		}
+	}
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
-	for (int i = 0; i < matrix->getP(); i++)
-		for (int j = 0; j < matrix->getQ(); j++)
-			for (int k = 0; k < variables.size(); k++)
+	cout << (firstBlockCell.first) << " " << (firstBlockCell.second) << endl;
+	for (int i = 0; i < matrix->getP(); i++) {
+		for (int j = 0; j < matrix->getQ(); j++) {
+			for (int k = 0; k < variables.size(); k++) {
 				if (variables[k].getRow() == firstBlockCell.first + i && variables[k].getCol() == firstBlockCell.second + j)
 					variables[k].undoChange(row, col);
+			}
+		}
+	}
 }
