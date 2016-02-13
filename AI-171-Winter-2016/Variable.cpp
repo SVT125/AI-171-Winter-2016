@@ -9,7 +9,7 @@ Variable::Variable(int row, int col, int n) {
 	this->row = row;
 	this->col = col;
 	value = 0;
-	for (int i = 1; i < n; i++)
+	for (int i = 1; i <= n; i++)
 		possibleValues.push_back(i);
 }
 
@@ -23,16 +23,16 @@ void Variable::setValue(int value) {
 	this->value = value;
 }
 
-int Variable::getValue() { 
-	return this->value; 
+int Variable::getValue() {
+	return this->value;
 }
 
-int Variable::getRow() { 
-	return this->row; 
+int Variable::getRow() {
+	return this->row;
 }
 
-int Variable::getCol() { 
-	return this->col; 
+int Variable::getCol() {
+	return this->col;
 }
 
 vector<int> Variable::getPossibleValues() {
@@ -47,15 +47,15 @@ void Variable::removeValue(int row, int col, int val) {
 	//Remove the value from this variable's possible values remaining.
 	for (int i = 0; i < possibleValues.size(); i++)
 		if (possibleValues[i] == val) {
-			possibleValues.erase(possibleValues.begin() + i);
-			break;
+		possibleValues.erase(possibleValues.begin() + i);
+		break;
 		}
 
 	//Add this change to the stack in case of later backtracking.
-	possibleValueChanges.push(make_pair(make_pair(row,col),val));
+	possibleValueChanges.push(make_pair(make_pair(row, col), val));
 }
 
 void Variable::undoChange(int row, int col) {
-	if (possibleValueChanges.top().first == make_pair(row, col))
+	if (possibleValueChanges.size() > 0 && possibleValueChanges.top().first == make_pair(row, col))
 		possibleValueChanges.pop();
 }

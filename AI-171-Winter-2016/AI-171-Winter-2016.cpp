@@ -23,7 +23,7 @@ bool isTimedOut(long curr, long limit) {
 SudokuMatrix* parseInput(string fileName) {
 	ifstream inputFile(fileName);
 
-	int m, n , p,q;
+	int m, n, p, q;
 	string line;
 
 	getline(inputFile, line, ' ');
@@ -42,8 +42,9 @@ SudokuMatrix* parseInput(string fileName) {
 		outputFile << "Error: Invalid input parameters" << endl;
 		outputFile.close();
 		return nullptr;
-	} else
-		return new SudokuMatrix(m,n,p,q);
+	}
+	else
+		return new SudokuMatrix(m, n, p, q);
 }
 
 //Returns true if we were successfully able to fill the matrix, false otherwise.
@@ -56,7 +57,7 @@ bool fillMatrix(SudokuMatrix* matrix, clock_t begin, int limit) {
 	for (int i = 0; i < matrix->getN(); i++)
 		for (int j = 0; j < matrix->getN(); j++)
 			cells.push_back(make_pair(i, j));
-	shuffle(cells.begin(), cells.end(),generator);
+	shuffle(cells.begin(), cells.end(), generator);
 
 	for (int i = 0; i < matrix->getM(); i++) {
 		//If timed out, return.
@@ -75,7 +76,7 @@ bool fillMatrix(SudokuMatrix* matrix, clock_t begin, int limit) {
 			values[j] = index++;
 
 		//Shuffle the vectors for random picking.
-		shuffle(values.begin(), values.end(),generator);
+		shuffle(values.begin(), values.end(), generator);
 
 		for (size_t l = 0; l < values.size(); l++) {
 			matrix->setMatrixCell(row, col, values[l]);
@@ -96,15 +97,15 @@ bool fillMatrix(SudokuMatrix* matrix, clock_t begin, int limit) {
 
 void outputMatrix(const SudokuMatrix* matrix, string fileName) {
 	ofstream outputFile(fileName);
-	
-	outputFile << matrix->getN() << " " << matrix->getP() << " "
-	 << matrix->getQ() << endl;
 
-	for (int i = 0; i < matrix->getN(); i ++){
+	outputFile << matrix->getN() << " " << matrix->getP() << " "
+		<< matrix->getQ() << endl;
+
+	for (int i = 0; i < matrix->getN(); i++){
 		for (int j = 0; j < matrix->getN(); j++){
 			int cell = matrix->getMatrixCell(i, j);
 			//Convert any number above 10 via ASCII.
-			char convertedCell = cell > 9 ? (char)(55+cell): (char)(48+cell);
+			char convertedCell = cell > 9 ? (char)(55 + cell) : (char)(48 + cell);
 			outputFile << convertedCell << " ";
 		}
 		outputFile << endl;
@@ -136,7 +137,7 @@ SudokuMatrix* readInput(std::string fileName) {
 			back_inserter(ret));
 
 		for (int j = 0; j < n; j++)
-			matrix->setMatrixCell(i, j,atoi(ret[j].c_str()));
+			matrix->setMatrixCell(i, j, atoi(ret[j].c_str()));
 	}
 
 	return matrix;
@@ -148,14 +149,14 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 	outputFile << "TOTAL_START = " << start << endl;
 	outputFile << "PREPROCESSING_START = " << "Not applicable" << endl; //Redo for AC preprocessing later
 	outputFile << "PREPROCESSING_END = " << "Not applicable" << endl; //Redo for AC preprocessing later
-	outputFile << "SEARCH_START = " << ((double)(s_start))/CLOCKS_PER_SEC << endl;
-	outputFile << "SEARCH_DONE = " << ((double)(s_end))/CLOCKS_PER_SEC << endl;
+	outputFile << "SEARCH_START = " << ((double)(s_start)) / CLOCKS_PER_SEC << endl;
+	outputFile << "SEARCH_DONE = " << ((double)(s_end)) / CLOCKS_PER_SEC << endl;
 	outputFile << "STATUS = ";
 
 	switch (flag) {
-		case -1: outputFile << "error" << endl; break;
-		case 0: outputFile << "timeout" << endl; break;
-		case 1: outputFile << "success" << endl; break;
+	case -1: outputFile << "error" << endl; break;
+	case 0: outputFile << "timeout" << endl; break;
+	case 1: outputFile << "success" << endl; break;
 	}
 
 	outputFile << "SOLUTION = ";
@@ -173,7 +174,7 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 				outputFile << ",";
 		}
 	}
-	
+
 	outputFile << endl;
 
 	outputFile << "NODES = " << nodes << endl;
@@ -199,7 +200,7 @@ int main(int argc, char* argv[])
 
 	clock_t limit = atof(argv[3]) * CLOCKS_PER_SEC;
 	string inputFileName = argv[1], outputFileName = argv[2];
-		
+
 	if (argc > 4)
 		matrix = doGen ? parseInput(inputFileName) : readInput(inputFileName);
 	else
@@ -209,34 +210,34 @@ int main(int argc, char* argv[])
 		cout << "Failed to retrieve matrix." << endl;
 		return -1;
 	}
-	
+
 	if (argc > 4)
 		if (doGen) {
-			while (!fillMatrix(matrix, begin, limit) && !isTimedOut(clock() - begin, limit)) {
-				matrix = parseInput(inputFileName);
-			}
+		while (!fillMatrix(matrix, begin, limit) && !isTimedOut(clock() - begin, limit)) {
+			matrix = parseInput(inputFileName);
+		}
 
-			if (isTimedOut(clock()-begin, limit)) {
-				ofstream outputFile(outputFileName);
-				outputFile << "Timeout." << endl;
-				outputFile.close();
-				return -1;
-			}
-			
-			outputMatrix(matrix, outputFileName);
+		if (isTimedOut(clock() - begin, limit)) {
+			ofstream outputFile(outputFileName);
+			outputFile << "Timeout." << endl;
+			outputFile.close();
+			return -1;
+		}
+
+		outputMatrix(matrix, outputFileName);
 		}
 		else if (doBT) {
 			clock_t s_start, s_end;
 			try {
 				s_start = clock() - begin, s_end;
 				BTSolver solver(matrix);
-				flag = solver.solve(begin,limit,doFC);
+				flag = solver.solve(begin, limit, doFC);
 				s_end = clock() - begin;
-				outputLog(matrix, outputFileName, flag, 0, s_start, s_end,solver.getVariableVector(),solver.getNodes(),solver.getBacktracks());
+				outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariables(), solver.getNodes(), solver.getBacktracks());
 			}
 			catch (exception& e) {
 				vector<Variable> vars;
-				outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin,vars,0,0);
+				outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin, vars, 0, 0);
 			}
 		}
 		else {
@@ -247,9 +248,9 @@ int main(int argc, char* argv[])
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = solver.solve(begin,limit,doFC);
+			flag = solver.solve(begin, limit, doFC);
 			s_end = clock() - begin;
-			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), solver.getNodes(), solver.getBacktracks());
+			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariables(), solver.getNodes(), solver.getBacktracks());
 		}
 		catch (exception& e) {
 			vector<Variable> vars;
