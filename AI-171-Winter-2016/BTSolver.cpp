@@ -15,9 +15,9 @@ BTSolver::BTSolver(SudokuMatrix* matrix) {
 	for (int i = 0; i < matrix->getN(); i++)
 		for (int j = 0; j < matrix->getN(); j++)
 			if (matrix->getMatrixCell(i, j) == 0) {
-		Variable var(i, j, matrix->getN());
-		var.setValue(0);
-		variables.push_back(var);
+				Variable var(i, j, matrix->getN());
+				var.setValue(0);
+				variables.push_back(var);
 			}
 }
 

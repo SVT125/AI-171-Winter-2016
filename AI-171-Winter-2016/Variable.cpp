@@ -56,6 +56,8 @@ void Variable::removeValue(int row, int col, int val) {
 }
 
 void Variable::undoChange(int row, int col) {
-	if (possibleValueChanges.size() > 0 && possibleValueChanges.top().first == make_pair(row, col))
+	if (possibleValueChanges.size() > 0 && possibleValueChanges.top().first == make_pair(row, col)) {
+		this->value = possibleValueChanges.top().second;
 		possibleValueChanges.pop();
+	}
 }
