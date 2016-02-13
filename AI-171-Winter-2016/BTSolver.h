@@ -26,7 +26,7 @@ public:
 
 	int getNextValue(std::vector<int>& values);
 
-	stack<pair<int, int>> getTrail();
+	std::stack<std::pair<int, int>> getTrail();
 
 	std::map<std::pair<int,int>,Variable> getVariables();
 

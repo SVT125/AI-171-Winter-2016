@@ -13,6 +13,12 @@ Variable::Variable(int row, int col, int n) {
 		possibleValues.push_back(i);
 }
 
+Variable::Variable() {
+	this->row = -1;
+	this->col = -1;
+	this->value = -1;
+}
+
 void Variable::setValue(int value) {
 	this->value = value;
 }

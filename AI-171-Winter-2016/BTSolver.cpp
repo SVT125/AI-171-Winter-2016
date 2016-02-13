@@ -22,11 +22,11 @@ BTSolver::BTSolver(SudokuMatrix* matrix) {
 }
 
 Variable BTSolver::getUnassignedVariable() {
-	for (auto element : variables) {
-		if (element.second.getValue() == 0)
-			return element.second;
+	for (map<std::pair<int,int>,Variable>::iterator iter = variables.begin(); iter != variables.end(); iter++) {
+		if (iter->second.getValue() == 0)
+			return iter->second;
 	}
-	return Variable(-1,-1,-1);
+	return Variable();
 }
 
 int BTSolver::getBacktracks() {
@@ -54,6 +54,7 @@ vector<Variable> BTSolver::getVariableVector() {
 	vector<Variable> vars;
 	for (auto element : variables)
 		vars.push_back(element.second);
+	return vars;
 }
 
 stack<pair<int, int>> BTSolver::getTrail() {
@@ -61,14 +62,10 @@ stack<pair<int, int>> BTSolver::getTrail() {
 }
 
 int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
-	nodes++;
     if (foundSolution)
 		return 1;
 
 	int value;
-	std::vector<int> values;
-	for (int i = 1; i <= matrix->getN(); i++)
-		values.push_back(i);
 
 	Variable var = getUnassignedVariable();
 	if (var.getValue() == -1) {
@@ -76,13 +73,18 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 		return 1;
 	}
 
-	while ((value = getNextValue(values)) != -1) {
+	vector<int> possibleValues = var.getPossibleValues();
+	if (possibleValues.size() > 0)
+		nodes++;
+
+	cout << var.getRow() << " " << var.getCol() << endl;
+	while ((value = getNextValue(possibleValues)) != -1) {
 		if (isTimedOut(clock()-begin, limit))
 			return 0;
 
 		matrix->setMatrixCell(var.getRow(), var.getCol(), value);
 		if (SudokuMatrix::checkValidCell(matrix, var.getRow(), var.getCol())) {
-			var.setValue(value);
+			variables[make_pair(var.getRow(),var.getCol())].setValue(value);
 			trail.push(make_pair(var.getRow(),var.getCol()));
 
 			if (doFC)
@@ -96,7 +98,7 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 			if (doFC)
 				undoForwardChecking(var.getRow(), var.getCol());
 
-			variables[make_pair(var.getRow(),var.getCol())].setValue(0);
+			variables[trail.top()].setValue(0);
 			matrix->setMatrixCell(var.getRow(), var.getCol(), 0);
 			trail.pop();
 			backtracks++;

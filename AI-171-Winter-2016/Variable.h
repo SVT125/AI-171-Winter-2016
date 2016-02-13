@@ -11,6 +11,7 @@ private:
 	std::stack<std::pair<std::pair<int, int>, int>> possibleValueChanges;
 public:
 	Variable(int row, int col, int n);
+	Variable();
 
 	void setValue(int value);
 
