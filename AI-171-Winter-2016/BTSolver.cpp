@@ -17,15 +17,16 @@ BTSolver::BTSolver(SudokuMatrix* matrix) {
 			if (matrix->getMatrixCell(i, j) == 0) {
 				Variable var(i, j, matrix->getN());
 				var.setValue(0);
-				variables.push_back(var);
+				variables.emplace(make_pair(i, j), var);
 			}
 }
 
-int BTSolver::getUnassignedVariableIndex() {
-	for (int i = 0; i < variables.size(); i++)
-		if (variables[i].getValue() == 0)
-			return i;
-	return -1;
+Variable BTSolver::getUnassignedVariable() {
+	for (map<std::pair<int, int>, Variable>::iterator iter = variables.begin(); iter != variables.end(); iter++) {
+		if (iter->second.getValue() == 0)
+			return iter->second;
+	}
+	return Variable();
 }
 
 int BTSolver::getBacktracks() {
@@ -45,24 +46,34 @@ int BTSolver::getNextValue(std::vector<int>& values) {
 	return value;
 }
 
-vector<Variable> BTSolver::getVariables() {
+map<pair<int, int>, Variable> BTSolver::getVariables() {
 	return this->variables;
+}
+
+vector<Variable> BTSolver::getVariableVector() {
+	vector<Variable> vars;
+	for (auto element : variables)
+		vars.push_back(element.second);
+	return vars;
+}
+
+stack<pair<int, int>> BTSolver::getTrail() {
+	return this->trail;
 }
 
 int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 	if (foundSolution)
 		return 1;
 
-	int nextVariableIndex, value;
+	Variable var = getUnassignedVariable();
+	int value;
 
-	if ((nextVariableIndex = getUnassignedVariableIndex()) == -1) {
+	if (var.getValue() == -1) {
 		foundSolution = true;
 		return 1;
 	}
 
-	Variable var = variables[nextVariableIndex];
 	vector<int> values = var.getPossibleValues();
-
 	if (values.size() > 0)
 		nodes++;
 
@@ -72,8 +83,8 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 
 		matrix->setMatrixCell(var.getRow(), var.getCol(), value);
 		if (SudokuMatrix::checkValidCell(matrix, var.getRow(), var.getCol())) {
-			variables[nextVariableIndex].setValue(value);
-			trail.push(nextVariableIndex);
+			variables[make_pair(var.getRow(),var.getCol())].setValue(value);
+			trail.push(make_pair(var.getRow(), var.getCol()));
 
 			if (doFC)
 				applyForwardChecking(var.getRow(), var.getCol(), value);
@@ -101,51 +112,31 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 void BTSolver::applyForwardChecking(int row, int col, int val) {
 	//Check down the row.
 	for (int i = 0; i < matrix->getN(); i++)
-		for (int j = 0; j < variables.size(); j++)
-			if (variables[j].getRow() == row)
-				variables[j].removeValue(row, col, val);
+		variables[make_pair(row,i)].removeValue(row, col, val);
 	
 	//Check down the column.
 	for (int i = 0; i < matrix->getN(); i++)
-		for (int j = 0; j < variables.size(); j++)
-			if (variables[j].getCol() == col)
-				variables[j].removeValue(row, col, val);
+		variables[make_pair(i,col)].removeValue(row, col, val);
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
 	for (int i = 0; i < matrix->getP(); i++)
 		for (int j = 0; j < matrix->getQ(); j++)
-			for (int k = 0; k < variables.size(); k++)
-				if (variables[k].getRow() == firstBlockCell.first + i && variables[k].getCol() == firstBlockCell.second + j)
-					variables[k].removeValue(row, col, val);
+			variables[make_pair(firstBlockCell.first + i, firstBlockCell.second + j)].removeValue(row, col, val);
 }
 
 void BTSolver::undoForwardChecking(int row, int col) {
 	//Check down the row.
-	for (int i = 0; i < matrix->getN(); i++) {
-		for (int j = 0; j < variables.size(); j++) {
-			if (variables[j].getRow() == row)
-				variables[j].undoChange(row, col);
-		}
-	}
+	for (int i = 0; i < matrix->getN(); i++)
+		variables[make_pair(row, i)].undoChange(row, col);
 
-	
 	//Check down the column.
-	for (int i = 0; i < matrix->getN(); i++) {
-		for (int j = 0; j < variables.size(); j++) {
-			if (variables[j].getCol() == col)
-				variables[j].undoChange(row, col);
-		}
-	}
+	for (int i = 0; i < matrix->getN(); i++)
+		variables[make_pair(i, col)].undoChange(row, col);
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
-	for (int i = 0; i < matrix->getP(); i++) {
-		for (int j = 0; j < matrix->getQ(); j++) {
-			for (int k = 0; k < variables.size(); k++) {
-				if (variables[k].getRow() == firstBlockCell.first + i && variables[k].getCol() == firstBlockCell.second + j)
-					variables[k].undoChange(row, col);
-			}
-		}
-	}
+	for (int i = 0; i < matrix->getP(); i++)
+		for (int j = 0; j < matrix->getQ(); j++)
+			variables[make_pair(firstBlockCell.first + i, firstBlockCell.second + j)].undoChange(row, col);
 }
