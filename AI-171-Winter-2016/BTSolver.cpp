@@ -102,13 +102,13 @@ void BTSolver::applyForwardChecking(int row, int col, int val) {
 	//Check down the row.
 	for (int i = 0; i < matrix->getN(); i++)
 		for (int j = 0; j < variables.size(); j++)
-			if (variables[j].getRow() == i && variables[j].getCol() == col)
+			if (variables[j].getRow() == row)
 				variables[j].removeValue(row, col, val);
-
+	
 	//Check down the column.
 	for (int i = 0; i < matrix->getN(); i++)
 		for (int j = 0; j < variables.size(); j++)
-			if (variables[j].getRow() == row && variables[j].getCol() == i)
+			if (variables[j].getCol() == col)
 				variables[j].removeValue(row, col, val);
 
 	//Check down the block.
@@ -116,7 +116,7 @@ void BTSolver::applyForwardChecking(int row, int col, int val) {
 	for (int i = 0; i < matrix->getP(); i++)
 		for (int j = 0; j < matrix->getQ(); j++)
 			for (int k = 0; k < variables.size(); k++)
-				if (variables[k].getRow() == i && variables[j].getCol() == j)
+				if (variables[k].getRow() == firstBlockCell.first + i && variables[k].getCol() == firstBlockCell.second + j)
 					variables[k].removeValue(row, col, val);
 }
 
@@ -124,22 +124,22 @@ void BTSolver::undoForwardChecking(int row, int col) {
 	//Check down the row.
 	for (int i = 0; i < matrix->getN(); i++) {
 		for (int j = 0; j < variables.size(); j++) {
-			if (variables[j].getRow() == i && variables[j].getCol() == col)
+			if (variables[j].getRow() == row)
 				variables[j].undoChange(row, col);
 		}
 	}
 
+	
 	//Check down the column.
 	for (int i = 0; i < matrix->getN(); i++) {
 		for (int j = 0; j < variables.size(); j++) {
-			if (variables[j].getRow() == row && variables[j].getCol() == i)
+			if (variables[j].getCol() == col)
 				variables[j].undoChange(row, col);
 		}
 	}
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
-	cout << (firstBlockCell.first) << " " << (firstBlockCell.second) << endl;
 	for (int i = 0; i < matrix->getP(); i++) {
 		for (int j = 0; j < matrix->getQ(); j++) {
 			for (int k = 0; k < variables.size(); k++) {
