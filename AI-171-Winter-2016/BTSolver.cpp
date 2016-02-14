@@ -52,8 +52,9 @@ map<pair<int, int>, Variable> BTSolver::getVariables() {
 
 vector<Variable> BTSolver::getVariableVector() {
 	vector<Variable> vars;
-	for (auto element : variables)
+	for (auto element : variables) {
 		vars.push_back(element.second);
+	}
 	return vars;
 }
 
@@ -112,31 +113,37 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 void BTSolver::applyForwardChecking(int row, int col, int val) {
 	//Check down the row.
 	for (int i = 0; i < matrix->getN(); i++)
-		variables[make_pair(row,i)].removeValue(row, col, val);
+		if (variables.count(make_pair(row,i)))
+			variables[make_pair(row,i)].removeValue(row, col, val);
 	
 	//Check down the column.
 	for (int i = 0; i < matrix->getN(); i++)
-		variables[make_pair(i,col)].removeValue(row, col, val);
+		if (variables.count(make_pair(i, col)))
+			variables[make_pair(i,col)].removeValue(row, col, val);
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
 	for (int i = 0; i < matrix->getP(); i++)
 		for (int j = 0; j < matrix->getQ(); j++)
-			variables[make_pair(firstBlockCell.first + i, firstBlockCell.second + j)].removeValue(row, col, val);
+			if (variables.count(make_pair(firstBlockCell.first + i, firstBlockCell.second + j)))
+				variables[make_pair(firstBlockCell.first + i, firstBlockCell.second + j)].removeValue(row, col, val);
 }
 
 void BTSolver::undoForwardChecking(int row, int col) {
 	//Check down the row.
 	for (int i = 0; i < matrix->getN(); i++)
-		variables[make_pair(row, i)].undoChange(row, col);
+		if (variables.count(make_pair(row, i)))
+			variables[make_pair(row, i)].undoChange(row, col);
 
 	//Check down the column.
 	for (int i = 0; i < matrix->getN(); i++)
-		variables[make_pair(i, col)].undoChange(row, col);
+		if (variables.count(make_pair(i, col)))
+			variables[make_pair(i, col)].undoChange(row, col);
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
 	for (int i = 0; i < matrix->getP(); i++)
 		for (int j = 0; j < matrix->getQ(); j++)
-			variables[make_pair(firstBlockCell.first + i, firstBlockCell.second + j)].undoChange(row, col);
+			if (variables.count(make_pair(firstBlockCell.first + i, firstBlockCell.second + j)))
+				variables[make_pair(firstBlockCell.first + i, firstBlockCell.second + j)].undoChange(row, col);
 }
