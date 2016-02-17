@@ -147,8 +147,8 @@ void outputLog(SudokuMatrix* matrix, string fileName, int flag, clock_t start, c
 	ofstream outputFile(fileName);
 
 	outputFile << "TOTAL_START = " << start << endl;
-	outputFile << "PREPROCESSING_START = " << "Not applicable" << endl; //Redo for AC preprocessing later
-	outputFile << "PREPROCESSING_END = " << "Not applicable" << endl; //Redo for AC preprocessing later
+	outputFile << "PREPROCESSING_START = " << 0 << endl; //Redo for AC preprocessing later
+	outputFile << "PREPROCESSING_END = " << 0 << endl; //Redo for AC preprocessing later
 	outputFile << "SEARCH_START = " << ((double)(s_start)) / CLOCKS_PER_SEC << endl;
 	outputFile << "SEARCH_DONE = " << ((double)(s_end)) / CLOCKS_PER_SEC << endl;
 	outputFile << "STATUS = ";
