@@ -117,9 +117,9 @@ void BTSolver::applyForwardChecking(int row, int col, int val) {
 			variables[make_pair(row,i)].removeValue(row, col, val);
 	
 	//Check down the column.
-	for (int i = 0; i < matrix->getN(); i++)
-		if (variables.count(make_pair(i, col)))
-			variables[make_pair(i,col)].removeValue(row, col, val);
+	for (int j = 0; j < matrix->getN(); j++)
+		if (variables.count(make_pair(j, col)))
+			variables[make_pair(j,col)].removeValue(row, col, val);
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
@@ -134,11 +134,11 @@ void BTSolver::undoForwardChecking(int row, int col) {
 	for (int i = 0; i < matrix->getN(); i++)
 		if (variables.count(make_pair(row, i)))
 			variables[make_pair(row, i)].undoChange(row, col);
-
+	
 	//Check down the column.
-	for (int i = 0; i < matrix->getN(); i++)
-		if (variables.count(make_pair(i, col)))
-			variables[make_pair(i, col)].undoChange(row, col);
+	for (int j = 0; j < matrix->getN(); j++)
+		if (variables.count(make_pair(j, col)))
+			variables[make_pair(j, col)].undoChange(row, col);
 
 	//Check down the block.
 	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);

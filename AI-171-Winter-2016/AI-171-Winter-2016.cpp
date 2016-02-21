@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
 	SudokuMatrix* matrix;
 	int flag;
 	clock_t begin = clock();
-	bool doGen = findFlag(argc, argv, "GEN"), doBT = findFlag(argc, argv, "BT"), doFC = findFlag(argc, argv, "FC");
+	bool doGen = findFlag(argc, argv, "GEN"), doFC = findFlag(argc, argv, "FC");
 
 	if (argc < 4)
 		return -1;
@@ -201,6 +201,7 @@ int main(int argc, char* argv[])
 	clock_t limit = atof(argv[3]) * CLOCKS_PER_SEC;
 	string inputFileName = argv[1], outputFileName = argv[2];
 
+	//If more than 4 arguments, then we can specify GEN. Otherwise if there are no flags, then default to BT + FC.
 	if (argc > 4)
 		matrix = doGen ? parseInput(inputFileName) : readInput(inputFileName);
 	else
@@ -224,12 +225,12 @@ int main(int argc, char* argv[])
 		}
 
 		outputMatrix(matrix, outputFileName);
-	} else if (doBT) {
+	} else if (doFC || argc == 4) {
 		clock_t s_start, s_end;
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = argc < 4 ? solver.solve(begin, limit, false) : solver.solve(begin, limit, doFC);
+			flag = argc == 4 ? solver.solve(begin, limit, false) : solver.solve(begin, limit, doFC);
 			s_end = clock() - begin;
 			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), solver.getNodes(), solver.getBacktracks());
 		}

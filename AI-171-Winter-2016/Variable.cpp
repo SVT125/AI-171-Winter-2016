@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Variable.h"
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -43,15 +45,16 @@ stack<pair<pair<int, int>, int>> Variable::getPossibleValueChanges() {
 }
 
 void Variable::removeValue(int row, int col, int val) {
-	//Remove the value from this variable's possible values remaining - we assume no duplicate values here!
-	for (int i = 0; i < possibleValues.size(); i++)
-		if (possibleValues[i] == val) {
-			possibleValues.erase(possibleValues.begin() + i);
-			break;
-		}
-
-	//Add this change to the stack in case of later backtracking.
-	possibleValueChanges.push(make_pair(make_pair(row, col), val));
+	if (possibleValues.size() > 0) {
+		//Remove the value from this variable's possible values remaining - we assume no duplicate values here!
+		for (int i = 0; i < possibleValues.size(); i++)
+			if (possibleValues[i] == val) {
+				possibleValues.erase(possibleValues.begin() + i);
+				//Add this change to the stack in case of later backtracking.
+				possibleValueChanges.push(make_pair(make_pair(row, col), val));
+				break;
+			}
+	}
 }
 
 void Variable::undoChange(int row, int col) {
