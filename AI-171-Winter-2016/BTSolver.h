@@ -18,7 +18,13 @@ private:
 public:
 	BTSolver(SudokuMatrix* matrix);
 
-	Variable getUnassignedVariable();
+	std::vector<Variable> BTSolver::getEmptyVariableSet(std::map<std::pair<int, int>, Variable> m);
+
+	std::vector<Variable> executeMRV(std::vector<Variable> vars);
+
+	std::vector<Variable> executeDH(std::vector<Variable> vars);
+
+	Variable getUnassignedVariable(bool doMRV, bool doDH);
 
 	int getNodes();
 
@@ -32,7 +38,7 @@ public:
 
 	std::vector<Variable> getVariableVector();
 
-	int solve(clock_t begin, clock_t limit, bool doFC);
+	int solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool doDH);
 
 	void applyForwardChecking(int row, int col, int val);
 

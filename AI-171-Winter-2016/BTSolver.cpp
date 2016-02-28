@@ -21,12 +21,92 @@ BTSolver::BTSolver(SudokuMatrix* matrix) {
 			}
 }
 
-Variable BTSolver::getUnassignedVariable() {
-	for (map<std::pair<int, int>, Variable>::iterator iter = variables.begin(); iter != variables.end(); iter++) {
+vector<Variable> BTSolver::getEmptyVariableSet(map<pair<int, int>, Variable> m) {
+	vector<Variable> values;
+	for (map<pair<int, int>, Variable>::iterator iter = m.begin(); iter != m.end(); iter++)
 		if (iter->second.getValue() == 0)
-			return iter->second;
+			values.push_back(iter->second);
+	return values;
+}
+
+vector<Variable> BTSolver::executeMRV(vector<Variable> vars) {
+	vector<Variable> lowestVariables;
+	int lowestHeuristic = INT_MAX;
+	for (int i = 0; i < vars.size(); i++) {
+		int possibleSize = vars[i].getPossibleValues().size();
+		if (possibleSize < lowestHeuristic) {
+			lowestVariables.clear();
+			lowestVariables.push_back(vars[i]);
+			lowestHeuristic = possibleSize;
+		} else if (possibleSize == lowestHeuristic)
+			lowestVariables.push_back(vars[i]);
 	}
-	return Variable();
+	return lowestVariables;
+}
+
+vector<Variable> BTSolver::executeDH(vector<Variable> vars) {
+	vector<Variable> highestVariables;
+	int highestHeuristic = INT_MIN;
+
+	for (int i = 0; i < vars.size(); i++) {
+		int degreeHeuristic = 0, row = vars[i].getRow(), col = vars[i].getCol();
+
+		//Check down the row.
+		for (int j = 0; j < matrix->getN(); j++)
+			if (variables.count(make_pair(row, j)) && variables[make_pair(row, j)].getPossibleValues().size() == 0)
+				degreeHeuristic++;
+				
+
+		//Check down the column.
+		for (int j = 0; j < matrix->getN(); j++)
+			if (variables.count(make_pair(j, col)) && variables[make_pair(j, col)].getPossibleValues().size() == 0)
+				degreeHeuristic++;
+				
+
+		//Check down the block.
+		pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
+		for (int j = 0; j < matrix->getP(); j++)
+			for (int k = 0; k < matrix->getQ(); k++)
+				if (variables.count(make_pair(firstBlockCell.first + j, firstBlockCell.second + k)) 
+					&& variables[make_pair(firstBlockCell.first + j, firstBlockCell.second + k)].getPossibleValues().size() == 0)
+					degreeHeuristic++;
+
+		if (degreeHeuristic > highestHeuristic) {
+			highestVariables.clear();
+			highestVariables.push_back(vars[i]);
+			highestHeuristic= degreeHeuristic;
+		}
+		else if (degreeHeuristic == highestHeuristic)
+			highestVariables.push_back(vars[i]);
+					
+	}
+
+	return highestVariables;
+}
+
+//Apply the heuristics as was given in program execution - final tiebreak by returning first empty variable.
+Variable BTSolver::getUnassignedVariable(bool doMRV, bool doDH) {
+	//If there are no more empty variables, just return a null sentinel to show we're done.
+	vector<Variable> emptyVariables = getEmptyVariableSet(this->variables);
+	if (emptyVariables.size() == 0)
+		return Variable();
+
+	if (doMRV && !doDH) {
+		//only MRV...
+		vector<Variable> resultMRV = this->executeMRV(emptyVariables);
+		return resultMRV[0];
+	} else if (doMRV && doDH) {
+		//MRV and tiebreak via DH
+		vector<Variable> resultMRV = this->executeMRV(emptyVariables);
+		return resultMRV.size() == 1 ? resultMRV[0] : executeDH(resultMRV)[0];
+	} else if (!doMRV && doDH) {
+		//only DH...
+		vector<Variable> resultDH = this->executeDH(emptyVariables);
+		return resultDH[0];
+	} else {
+		//No arguments, just return the first open variable.
+		return emptyVariables[0];
+	}
 }
 
 int BTSolver::getBacktracks() {
@@ -62,11 +142,11 @@ stack<pair<int, int>> BTSolver::getTrail() {
 	return this->trail;
 }
 
-int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
+int BTSolver::solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool doDH) {
 	if (foundSolution)
 		return 1;
 
-	Variable var = getUnassignedVariable();
+	Variable var = getUnassignedVariable(doMRV, doDH);
 	int value;
 
 	if (var.getValue() == -1) {
@@ -91,7 +171,7 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC) {
 				applyForwardChecking(var.getRow(), var.getCol(), value);
 
 			//If we were able to find further solutions from this assignment, return success.
-			if (solve(begin, limit, doFC) == 1)
+			if (solve(begin, limit, doFC, doMRV, doDH) == 1)
 				return 1;
 
 			//Backtrack, this value didn't lead to any further possible assignments.

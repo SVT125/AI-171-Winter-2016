@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
 	SudokuMatrix* matrix;
 	int flag;
 	clock_t begin = clock();
-	bool doGen = findFlag(argc, argv, "GEN"), doFC = findFlag(argc, argv, "FC");
+	bool doGen = findFlag(argc, argv, "GEN"), doFC = findFlag(argc, argv, "FC"), doMRV = findFlag(argc, argv, "MRV"), doDH = findFlag(argc, argv, "DH");
 
 	if (argc < 4)
 		return -1;
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = argc == 4 ? solver.solve(begin, limit, false) : solver.solve(begin, limit, doFC);
+			flag = argc == 4 ? solver.solve(begin, limit, false, false, false) : solver.solve(begin, limit, doFC, doMRV, doDH);
 			s_end = clock() - begin;
 			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), solver.getNodes(), solver.getBacktracks());
 		}
