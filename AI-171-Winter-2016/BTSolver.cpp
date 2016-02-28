@@ -77,8 +77,7 @@ vector<Variable> BTSolver::executeDH(vector<Variable> vars) {
 			highestHeuristic= degreeHeuristic;
 		}
 		else if (degreeHeuristic == highestHeuristic)
-			highestVariables.push_back(vars[i]);
-					
+			highestVariables.push_back(vars[i]);			
 	}
 
 	return highestVariables;
@@ -86,6 +85,16 @@ vector<Variable> BTSolver::executeDH(vector<Variable> vars) {
 
 //Apply the heuristics as was given in program execution - final tiebreak by returning first empty variable.
 Variable BTSolver::getUnassignedVariable(bool doMRV, bool doDH) {
+	if (!doMRV && !doDH) {
+		//If neither variable selection flags are on, just return the first empty variable.
+		//Save time and don't run through all empty variables (150+).
+		for (map<std::pair<int, int>, Variable>::iterator iter = variables.begin(); iter != variables.end(); iter++) {
+			if (iter->second.getValue() == 0)
+				return iter->second;
+		}
+		return Variable();
+	}
+
 	//If there are no more empty variables, just return a null sentinel to show we're done.
 	vector<Variable> emptyVariables = getEmptyVariableSet(this->variables);
 	if (emptyVariables.size() == 0)
@@ -103,9 +112,6 @@ Variable BTSolver::getUnassignedVariable(bool doMRV, bool doDH) {
 		//only DH...
 		vector<Variable> resultDH = this->executeDH(emptyVariables);
 		return resultDH[0];
-	} else {
-		//No arguments, just return the first open variable.
-		return emptyVariables[0];
 	}
 }
 
