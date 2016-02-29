@@ -24,13 +24,15 @@ public:
 
 	std::vector<Variable> executeDH(std::vector<Variable> vars);
 
+	int executeLCV(int row, int col, int value);
+
 	Variable getUnassignedVariable(bool doMRV, bool doDH);
 
 	int getNodes();
 
 	int getBacktracks();
 
-	int getNextValue(std::vector<int>& values);
+	int getNextValue(int row, int col, std::vector<int>& values, bool doLCV);
 
 	std::stack<std::pair<int, int>> getTrail();
 
@@ -38,7 +40,7 @@ public:
 
 	std::vector<Variable> getVariableVector();
 
-	int solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool doDH);
+	int solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool doDH, bool doLCV);
 
 	void applyForwardChecking(int row, int col, int val);
 

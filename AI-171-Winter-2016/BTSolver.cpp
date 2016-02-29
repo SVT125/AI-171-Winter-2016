@@ -21,66 +21,28 @@ BTSolver::BTSolver(SudokuMatrix* matrix) {
 			}
 }
 
+int countMatchingValues(vector<int> values, int value) {
+	int count = 0;
+	for (auto& element : values)
+		if (element == value)
+			count++;
+
+	return count;
+}
+
+bool isDuplicateCell(vector < pair<int, int>> seenCells, pair<int, int> cell) {
+	for (auto& element : seenCells)
+		if (element == cell)
+			return true;
+	return false;
+}
+
 vector<Variable> BTSolver::getEmptyVariableSet(map<pair<int, int>, Variable> m) {
 	vector<Variable> values;
 	for (map<pair<int, int>, Variable>::iterator iter = m.begin(); iter != m.end(); iter++)
 		if (iter->second.getValue() == 0)
 			values.push_back(iter->second);
 	return values;
-}
-
-vector<Variable> BTSolver::executeMRV(vector<Variable> vars) {
-	vector<Variable> lowestVariables;
-	int lowestHeuristic = INT_MAX;
-	for (int i = 0; i < vars.size(); i++) {
-		int possibleSize = vars[i].getPossibleValues().size();
-		if (possibleSize < lowestHeuristic) {
-			lowestVariables.clear();
-			lowestVariables.push_back(vars[i]);
-			lowestHeuristic = possibleSize;
-		} else if (possibleSize == lowestHeuristic)
-			lowestVariables.push_back(vars[i]);
-	}
-	return lowestVariables;
-}
-
-vector<Variable> BTSolver::executeDH(vector<Variable> vars) {
-	vector<Variable> highestVariables;
-	int highestHeuristic = INT_MIN;
-
-	for (int i = 0; i < vars.size(); i++) {
-		int degreeHeuristic = 0, row = vars[i].getRow(), col = vars[i].getCol();
-
-		//Check down the row.
-		for (int j = 0; j < matrix->getN(); j++)
-			if (variables.count(make_pair(row, j)) && variables[make_pair(row, j)].getPossibleValues().size() == 0)
-				degreeHeuristic++;
-				
-
-		//Check down the column.
-		for (int j = 0; j < matrix->getN(); j++)
-			if (variables.count(make_pair(j, col)) && variables[make_pair(j, col)].getPossibleValues().size() == 0)
-				degreeHeuristic++;
-				
-
-		//Check down the block.
-		pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
-		for (int j = 0; j < matrix->getP(); j++)
-			for (int k = 0; k < matrix->getQ(); k++)
-				if (variables.count(make_pair(firstBlockCell.first + j, firstBlockCell.second + k)) 
-					&& variables[make_pair(firstBlockCell.first + j, firstBlockCell.second + k)].getPossibleValues().size() == 0)
-					degreeHeuristic++;
-
-		if (degreeHeuristic > highestHeuristic) {
-			highestVariables.clear();
-			highestVariables.push_back(vars[i]);
-			highestHeuristic= degreeHeuristic;
-		}
-		else if (degreeHeuristic == highestHeuristic)
-			highestVariables.push_back(vars[i]);			
-	}
-
-	return highestVariables;
 }
 
 //Apply the heuristics as was given in program execution - final tiebreak by returning first empty variable.
@@ -104,11 +66,13 @@ Variable BTSolver::getUnassignedVariable(bool doMRV, bool doDH) {
 		//only MRV...
 		vector<Variable> resultMRV = this->executeMRV(emptyVariables);
 		return resultMRV[0];
-	} else if (doMRV && doDH) {
+	}
+	else if (doMRV && doDH) {
 		//MRV and tiebreak via DH
 		vector<Variable> resultMRV = this->executeMRV(emptyVariables);
 		return resultMRV.size() == 1 ? resultMRV[0] : executeDH(resultMRV)[0];
-	} else if (!doMRV && doDH) {
+	}
+	else if (!doMRV && doDH) {
 		//only DH...
 		vector<Variable> resultDH = this->executeDH(emptyVariables);
 		return resultDH[0];
@@ -121,15 +85,6 @@ int BTSolver::getBacktracks() {
 
 int BTSolver::getNodes() {
 	return this->nodes;
-}
-
-int BTSolver::getNextValue(std::vector<int>& values) {
-	if (values.size() == 0)
-		return -1;
-
-	int value = values[0];
-	values.erase(values.begin());
-	return value;
 }
 
 map<pair<int, int>, Variable> BTSolver::getVariables() {
@@ -148,7 +103,129 @@ stack<pair<int, int>> BTSolver::getTrail() {
 	return this->trail;
 }
 
-int BTSolver::solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool doDH) {
+vector<Variable> BTSolver::executeMRV(vector<Variable> vars) {
+	vector<Variable> lowestVariables;
+	int lowestHeuristic = INT_MAX;
+	for (int i = 0; i < vars.size(); i++) {
+		int possibleSize = vars[i].getPossibleValues().size();
+		if (possibleSize < lowestHeuristic) {
+			lowestVariables.clear();
+			lowestVariables.push_back(vars[i]);
+			lowestHeuristic = possibleSize;
+		} else if (possibleSize == lowestHeuristic)
+			lowestVariables.push_back(vars[i]);
+	}
+	return lowestVariables;
+}
+
+vector<Variable> BTSolver::executeDH(vector<Variable> vars) {
+	vector<Variable> highestVariables;
+	int highestHeuristic = INT_MIN;
+	vector <pair<int, int>> seenCells;
+
+	for (int i = 0; i < vars.size(); i++) {
+		int degreeHeuristic = 0, row = vars[i].getRow(), col = vars[i].getCol();
+
+		//Check down the row.
+		for (int j = 0; j < matrix->getN(); j++)
+			if (!isDuplicateCell(seenCells, make_pair(row, i)) && variables.count(make_pair(row, j)) && variables[make_pair(row, j)].getPossibleValues().size() == 0) {
+				degreeHeuristic++;
+				seenCells.push_back(make_pair(row, i));
+			}
+				
+
+		//Check down the column.
+		for (int j = 0; j < matrix->getN(); j++)
+			if (!isDuplicateCell(seenCells, make_pair(j,col)) && variables.count(make_pair(j, col)) && variables[make_pair(j, col)].getPossibleValues().size() == 0) {
+				degreeHeuristic++;
+				seenCells.push_back(make_pair(j, col));
+			}
+				
+
+		//Check down the block.
+		pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
+		for (int j = 0; j < matrix->getP(); j++)
+			for (int k = 0; k < matrix->getQ(); k++)
+				if (!isDuplicateCell(seenCells, make_pair(firstBlockCell.first + j, firstBlockCell.second + k))
+					&& variables.count(make_pair(firstBlockCell.first + j, firstBlockCell.second + k))
+					&& variables[make_pair(firstBlockCell.first + j, firstBlockCell.second + k)].getPossibleValues().size() == 0) {
+					degreeHeuristic++;
+					seenCells.push_back(make_pair(firstBlockCell.first + j, firstBlockCell.second + k));
+				}
+
+		if (degreeHeuristic > highestHeuristic) {
+			highestVariables.clear();
+			highestVariables.push_back(vars[i]);
+			highestHeuristic = degreeHeuristic;
+		}
+		else if (degreeHeuristic == highestHeuristic)
+			highestVariables.push_back(vars[i]);			
+	}
+
+	return highestVariables;
+}
+
+int BTSolver::executeLCV(int row, int col, int value) {
+	int totalAvailableAssignments = 0;
+	vector <pair<int, int>> seenCells;
+
+	//Check down the row.
+	for (int i = 0; i < matrix->getN(); i++)
+		if (!isDuplicateCell(seenCells,make_pair(row,i)) && variables.count(make_pair(row,i)) && variables[make_pair(row, i)].getPossibleValues().size() == 0) {
+			Variable var = variables[make_pair(row, i)];
+			totalAvailableAssignments += var.getPossibleValues().size() - countMatchingValues(var.getPossibleValues(), value);
+			seenCells.push_back(make_pair(row, i));
+		}
+
+	//Check down the column.
+	for (int j = 0; j < matrix->getN(); j++)
+		if (!isDuplicateCell(seenCells, make_pair(j,col)) && variables.count(make_pair(j, col)) && variables[make_pair(j, col)].getPossibleValues().size() == 0) {
+			Variable var = variables[make_pair(j, col)];
+			totalAvailableAssignments += var.getPossibleValues().size() - countMatchingValues(var.getPossibleValues(), value);
+			seenCells.push_back(make_pair(j,col));
+		}
+
+	//Check down the block.
+	pair<int, int> firstBlockCell = SudokuMatrix::getBlock(matrix, row, col);
+	for (int j = 0; j < matrix->getP(); j++)
+		for (int k = 0; k < matrix->getQ(); k++)
+			if (!isDuplicateCell(seenCells, make_pair(firstBlockCell.first + j, firstBlockCell.second + k)) 
+				&& variables.count(make_pair(firstBlockCell.first + j, firstBlockCell.second + k))
+				&& variables[make_pair(firstBlockCell.first + j, firstBlockCell.second + k)].getPossibleValues().size() == 0) {
+				Variable var = variables[make_pair(firstBlockCell.first + j, firstBlockCell.second + k)];
+				totalAvailableAssignments += var.getPossibleValues().size() -countMatchingValues(var.getPossibleValues(), value);
+				seenCells.push_back(make_pair(firstBlockCell.first + j, firstBlockCell.second + k));
+			}
+					
+	return totalAvailableAssignments;
+}
+
+int BTSolver::getNextValue(int row, int col, std::vector<int>& values, bool doLCV) {
+	if (values.size() == 0)
+		return -1;
+	
+	if (doLCV) {
+		//Conduct LCV
+		int bestIndex = -1, heuristic = INT_MIN;
+		for (int i = 0; i < values.size(); i++) {
+			int currentHeuristic = executeLCV(row,col,values[i]);
+			if (currentHeuristic > heuristic) {
+				heuristic = currentHeuristic;
+				bestIndex = i;
+			}
+		}
+		int bestValue = values[bestIndex];
+		values.erase(values.begin() + bestIndex);
+		return bestValue;
+	} else {
+		//If no LCV, just return the first value
+		int value = values[0];
+		values.erase(values.begin());
+		return value;
+	}
+}
+
+int BTSolver::solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool doDH, bool doLCV) {
 	if (foundSolution)
 		return 1;
 
@@ -164,7 +241,7 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool do
 	if (values.size() > 0)
 		nodes++;
 
-	while ((value = getNextValue(values)) != -1) {
+	while ((value = getNextValue(var.getRow(),var.getCol(),values, doLCV)) != -1) {
 		if (isTimedOut(clock() - begin, limit))
 			return 0;
 
@@ -177,7 +254,7 @@ int BTSolver::solve(clock_t begin, clock_t limit, bool doFC, bool doMRV, bool do
 				applyForwardChecking(var.getRow(), var.getCol(), value);
 
 			//If we were able to find further solutions from this assignment, return success.
-			if (solve(begin, limit, doFC, doMRV, doDH) == 1)
+			if (solve(begin, limit, doFC, doMRV, doDH, doLCV) == 1)
 				return 1;
 
 			//Backtrack, this value didn't lead to any further possible assignments.

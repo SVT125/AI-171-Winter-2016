@@ -193,7 +193,8 @@ int main(int argc, char* argv[])
 	SudokuMatrix* matrix;
 	int flag;
 	clock_t begin = clock();
-	bool doGen = findFlag(argc, argv, "GEN"), doFC = findFlag(argc, argv, "FC"), doMRV = findFlag(argc, argv, "MRV"), doDH = findFlag(argc, argv, "DH");
+	bool doGen = findFlag(argc, argv, "GEN"), doFC = findFlag(argc, argv, "FC"), doMRV = findFlag(argc, argv, "MRV"), doDH = findFlag(argc, argv, "DH"),
+		doLCV = findFlag(argc, argv, "LCV");
 
 	if (argc < 4)
 		return -1;
@@ -225,12 +226,12 @@ int main(int argc, char* argv[])
 		}
 
 		outputMatrix(matrix, outputFileName);
-	} else if (doFC || argc == 4) {
+	} else {
 		clock_t s_start, s_end;
 		try {
 			s_start = clock() - begin, s_end;
 			BTSolver solver(matrix);
-			flag = argc == 4 ? solver.solve(begin, limit, false, false, false) : solver.solve(begin, limit, doFC, doMRV, doDH);
+			flag = argc == 4 ? solver.solve(begin, limit, false, false, false, false) : solver.solve(begin, limit, doFC, doMRV, doDH, doLCV);
 			s_end = clock() - begin;
 			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), solver.getNodes(), solver.getBacktracks());
 		}
@@ -238,9 +239,6 @@ int main(int argc, char* argv[])
 			vector<Variable> vars;
 			outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin, vars, 0, 0);
 		}
-	}
-	else {
-		//Fill in the rest of the arguments...
 	}
 
 	delete matrix;
