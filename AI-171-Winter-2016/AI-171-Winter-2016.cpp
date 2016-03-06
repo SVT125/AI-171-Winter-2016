@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "AI-171-Winter-2016.h"
 #include "BTSolver.h"
+#include "LocalSolver.h"
 #include <time.h>
 #include <algorithm>
 #include <vector>
@@ -194,7 +195,7 @@ int main(int argc, char* argv[])
 	int flag;
 	clock_t begin = clock();
 	bool doGen = findFlag(argc, argv, "GEN"), doFC = findFlag(argc, argv, "FC"), doMRV = findFlag(argc, argv, "MRV"), doDH = findFlag(argc, argv, "DH"),
-		doLCV = findFlag(argc, argv, "LCV");
+		doLCV = findFlag(argc, argv, "LCV"), doLS = findFlag(argc, argv, "LS");
 
 	if (argc < 4)
 		return -1;
@@ -203,7 +204,7 @@ int main(int argc, char* argv[])
 	string inputFileName = argv[1], outputFileName = argv[2];
 
 	//If more than 4 arguments, then we can specify GEN. Otherwise if there are no flags, then default to BT + FC.
-	if (argc > 4)
+	if (argc > 4 && !doLS)
 		matrix = doGen ? parseInput(inputFileName) : readInput(inputFileName);
 	else
 		matrix = readInput(inputFileName);
@@ -226,7 +227,7 @@ int main(int argc, char* argv[])
 		}
 
 		outputMatrix(matrix, outputFileName);
-	} else {
+	} else if(!doLS) {
 		clock_t s_start, s_end;
 		try {
 			s_start = clock() - begin, s_end;
@@ -234,6 +235,19 @@ int main(int argc, char* argv[])
 			flag = argc == 4 ? solver.solve(begin, limit, false, false, false, false) : solver.solve(begin, limit, doFC, doMRV, doDH, doLCV);
 			s_end = clock() - begin;
 			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), solver.getNodes(), solver.getBacktracks());
+		}
+		catch (exception& e) {
+			vector<Variable> vars;
+			outputLog(matrix, outputFileName, -1, 0, s_start, clock() - begin, vars, 0, 0);
+		}
+	} else {
+		clock_t s_start, s_end;
+		try {
+			s_start = clock() - begin, s_end;
+			LocalSolver solver(matrix);
+			flag = solver.applyLocalSearch(begin,limit);
+			s_end = clock() - begin;
+			outputLog(matrix, outputFileName, flag, 0, s_start, s_end, solver.getVariableVector(), 0, 0);
 		}
 		catch (exception& e) {
 			vector<Variable> vars;
