@@ -11,7 +11,7 @@ private:
 	SudokuMatrix* matrix;
 	bool foundSolution, timedOut;
 	std::vector<Variable> variables;
-	
+	int MAX_STEPS;
 public:
 	LocalSolver(SudokuMatrix* matrix);
 	int applyLocalSearch(clock_t begin, clock_t limit);
@@ -19,6 +19,8 @@ public:
 	int countConflicts(int row, int col, int val);
 	bool isMatrixValid();
 	std::vector<Variable> getVariableVector();
+	void resetMatrix();
+	void fillMatrix();
 };
 
 

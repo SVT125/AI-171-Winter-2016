@@ -3,40 +3,29 @@
 #include <random>
 #include <algorithm>
 #include <iostream>
-#define MAX_STEPS 500
 
 using namespace std;
 
 LocalSolver::LocalSolver(SudokuMatrix* matrix) {
 	this->matrix = matrix;
 	this->foundSolution = false;
-
-	default_random_engine generator(random_device{}());
-	uniform_int_distribution<int> distribution(1, matrix->getN());
-	
-	for (int i = 0; i < matrix->getN(); i++)
-		for (int j = 0; j < matrix->getN(); j++)
-			if (this->matrix->getMatrixCell(i, j) == 0) {
-				int randomValue = distribution(generator);
-				this->matrix->setMatrixCell(i, j, randomValue);
-
-				Variable var(i, j, matrix->getN());
-				var.setValue(randomValue);
-				this->variables.push_back(var);
-			}
+	this->MAX_STEPS = matrix->getN() * matrix->getN() * 10;
+	fillMatrix();
 }
 
 int LocalSolver::applyLocalSearch(clock_t begin, clock_t limit) {
 	while (!applyMinConflicts()) {
 		if (isTimedOut(clock() - begin, limit))
 			return 0;
+		resetMatrix();
+		fillMatrix();
 	}
 	foundSolution = true;
 	return 1;
 }
 
 bool LocalSolver::applyMinConflicts() {
-	for (int i = 0; i < MAX_STEPS; i++) {
+	for (int i = 0; i < this->MAX_STEPS; i++) {
 		if (isMatrixValid())
 			return true;
 
@@ -48,7 +37,6 @@ bool LocalSolver::applyMinConflicts() {
 		while (SudokuMatrix::checkValidCell(this->matrix,var.getRow(), var.getCol())) {
 			var = this->variables[index++];
 		}
-
 		int bestValue = -1, lowestConflicts = INT_MAX;
 		for (int i = 0; i < var.getPossibleValues().size(); i++) {
 			int conflicts = countConflicts(var.getRow(), var.getCol(), var.getPossibleValues()[i]);
@@ -147,4 +135,26 @@ vector<Variable> LocalSolver::getVariableVector() {
 	vector<Variable> variables = this->variables;
 	sort(variables.begin(), variables.end(), variableSort);
 	return variables;
+}
+
+void LocalSolver::resetMatrix() {
+	for (auto& var : variables) {
+		this->matrix->setMatrixCell(var.getRow(),var.getCol(),0);
+		var.setValue(0);
+	}
+}
+
+void LocalSolver::fillMatrix() {
+	default_random_engine generator(random_device{}());
+	uniform_int_distribution<int> distribution(1, matrix->getN());
+	for (int i = 0; i < matrix->getN(); i++)
+		for (int j = 0; j < matrix->getN(); j++)
+			if (this->matrix->getMatrixCell(i, j) == 0) {
+				int randomValue = distribution(generator);
+				this->matrix->setMatrixCell(i, j, randomValue);
+
+				Variable var(i, j, matrix->getN());
+				var.setValue(randomValue);
+				this->variables.push_back(var);
+			}
 }
