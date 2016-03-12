@@ -3,7 +3,7 @@
 #include <random>
 #include <algorithm>
 #include <iostream>
-#define MAX_STEPS 100
+#define MAX_STEPS 500
 
 using namespace std;
 
@@ -40,7 +40,7 @@ bool LocalSolver::applyMinConflicts() {
 		if (isMatrixValid())
 			return true;
 
-		//Apply min-conflicts - random-restart wrapper applied.
+		//Apply min-conflicts.
 		default_random_engine generator(random_device{}());
 		shuffle(this->variables.begin(), this->variables.end(), generator);
 		int index = 0;
@@ -60,6 +60,7 @@ bool LocalSolver::applyMinConflicts() {
 
 		//Assign
 		matrix->setMatrixCell(this->variables[index - 1].getRow(),this->variables[index-1].getCol(),bestValue);
+		this->variables[index - 1].setValue(bestValue);
 	}
 
 	return false;
